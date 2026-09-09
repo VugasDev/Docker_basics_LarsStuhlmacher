@@ -1,0 +1,30 @@
+# Die Docker-Compose-Zusammenstellung für Pihole (https://hub.docker.com/r/pihole/pihole)
+#
+# Quelle: c't-3003-Gist (https://gist.github.com/jamct/2e6c03f60319423bc4bc6c23fc0aa359)
+# Angepasst für diese Übungsumgebung (WSL2) — Abweichungen sind unten markiert.
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      # ANPASSUNG: Im Video "53:53". Port 53 ist unter WSL2 bereits von
+      # systemd-resolved belegt, deshalb weicht der Host-Port auf 5353 aus.
+      - "5353:53/tcp"
+      - "5353:53/udp"
+      # ANPASSUNG: Port 67 (DHCP) aus dem Video entfällt — Pi-hole wird hier
+      # nicht als DHCP-Server betrieben.
+      # ANPASSUNG: Im Video "80:80". Port 80 gehört in diesem Projekt dem
+      # nginx-Stack, das Pi-hole-Webinterface hört deshalb auf 8081.
+      - "8081:80/tcp"
+    environment:
+      TZ: 'Europe/Berlin'
+      # Bewusst NICHT gesetzt: Das Repo ist öffentlich, ein Passwort gehört
+      # nicht in die Versionsverwaltung. Stattdessen nach dem Start setzen mit:
+      #   docker exec -it pihole pihole setpassword <passwort>
+      # WEBPASSWORD: 'set a secure password here or it will be random'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped

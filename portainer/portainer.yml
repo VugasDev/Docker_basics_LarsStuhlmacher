@@ -1,0 +1,16 @@
+# Docker-Compose-Datei für Portainer (https://hub.docker.com/r/portainer/portainer-ce). Antwortet auf Port 9000 des Servers
+#
+# Quelle: c't-3003-Gist (https://gist.github.com/jamct/2e6c03f60319423bc4bc6c23fc0aa359)
+# Unverändert übernommen — Port 9000 ist auf diesem System frei.
+services:
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    ports:
+      - 9000:9000
+    volumes:
+      # Der Docker-Socket ist Portainers Zugang zum Docker-Daemon — darüber
+      # sieht und steuert es alle anderen Container.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer_data:/data
+    restart: always

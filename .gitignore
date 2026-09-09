@@ -1,0 +1,6 @@
+# Laufzeit-Daten, die Docker beim Start der Stacks anlegt.
+# Diese Verzeichnisse gehören nicht in die Versionsverwaltung: sie enthalten
+# Datenbanken, Logs und Zugangsdaten und gehören teilweise dem Nutzer root.
+pihole/etc-pihole/
+pihole/etc-dnsmasq.d/
+portainer/portainer_data/

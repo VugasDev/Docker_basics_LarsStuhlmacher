@@ -1,0 +1,22 @@
+# Docker-Compose-Datei für nginx (https://hub.docker.com/_/nginx)
+#
+# Diese Datei stammt NICHT aus dem c't-3003-Video, sondern wurde im Rahmen
+# der Aufgabe selbst erstellt.
+#
+# Sie ist das Compose-Gegenstück zum Video-Befehl "docker run -p 80:80 nginx":
+# derselbe Webserver, aber deklarativ beschrieben, mit festem Containernamen,
+# Neustart-Richtlinie und einer eigenen Startseite aus dem Ordner ./html.
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      # Host-Port 80 -> Container-Port 80: Aufruf über http://localhost
+      - "80:80"
+    volumes:
+      # Bind-Mount der eigenen Startseite. ":ro" = read-only, der Container
+      # darf die Dateien lesen, aber nicht verändern.
+      - ./html:/usr/share/nginx/html:ro
+    environment:
+      TZ: 'Europe/Berlin'
+    restart: unless-stopped

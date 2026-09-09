@@ -1,0 +1,11 @@
+# Docker-Compose-Datei für Watchtower (https://hub.docker.com/r/containrrr/watchtower)
+#
+# Quelle: c't-3003-Gist (https://gist.github.com/jamct/2e6c03f60319423bc4bc6c23fc0aa359)
+# Unverändert übernommen. Watchtower braucht keine Ports — es arbeitet
+# ausschließlich über den Docker-Socket und hat keine Weboberfläche.
+services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

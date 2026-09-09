@@ -13,4 +13,9 @@ services:
       # sieht und steuert es alle anderen Container.
       - /var/run/docker.sock:/var/run/docker.sock
       - ./portainer_data:/data
+    labels:
+      # ERGÄNZUNG (nicht aus dem Gist): Meldet diesen Container bei Watchtower
+      # für automatische Updates an. Ohne dieses Label lässt der mit
+      # "--label-enable" gestartete Watchtower ihn unangetastet.
+      com.centurylinklabs.watchtower.enable: "true"
     restart: always

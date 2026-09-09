@@ -19,4 +19,9 @@ services:
       - ./html:/usr/share/nginx/html:ro
     environment:
       TZ: 'Europe/Berlin'
+    labels:
+      # ERGÄNZUNG (nicht aus dem Gist): Meldet diesen Container bei Watchtower
+      # für automatische Updates an. Ohne dieses Label lässt der mit
+      # "--label-enable" gestartete Watchtower ihn unangetastet.
+      com.centurylinklabs.watchtower.enable: "true"
     restart: unless-stopped

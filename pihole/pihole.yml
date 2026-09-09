@@ -25,6 +25,11 @@ services:
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    labels:
+      # ERGÄNZUNG (nicht aus dem Gist): Meldet diesen Container bei Watchtower
+      # für automatische Updates an. Ohne dieses Label lässt der mit
+      # "--label-enable" gestartete Watchtower ihn unangetastet.
+      com.centurylinklabs.watchtower.enable: "true"
     cap_add:
       - NET_ADMIN
     restart: unless-stopped

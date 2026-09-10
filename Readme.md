@@ -10,6 +10,8 @@ zugehörigen Gist. Die Datei für **nginx** wurde selbst erstellt.
 
 > Quelle: <https://gist.github.com/jamct/2e6c03f60319423bc4bc6c23fc0aa359>
 
+Die Änderungshistorie steht in [CHANGELOG.md](CHANGELOG.md).
+
 ## Aufbau des Repositorys
 
 ```

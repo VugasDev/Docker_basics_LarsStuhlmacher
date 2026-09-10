@@ -246,25 +246,30 @@ Mit dieser Option beachtet Watchtower ausschließlich Container, die das Label
 `pihole.yml`, `portainer.yml` und `nginx.yml` gesetzt — alle übrigen Container
 auf dem Rechner bleiben unangetastet.
 
-> ⚠️ **Bekannte Einschränkung in dieser Umgebung:** Das Image
-> `containrrr/watchtower` aus dem Video stammt vom **11.11.2023** und spricht
-> die Docker-API-Version **1.25**. Die hier eingesetzte Docker Engine 29.1.3
-> verlangt mindestens **API 1.44**. Der Container startet deshalb und beendet
-> sich sofort wieder mit Exit-Code 1:
+> ⚠️ **Das Image aus dem Video ist nicht mehr lauffähig.** `containrrr/watchtower`
+> stammt vom **11.11.2023** und spricht die Docker-API-Version **1.25**.
+> Aktuelle Docker-Engines verlangen mindestens **API 1.44**, der Container
+> beendet sich deshalb sofort mit Exit-Code 1:
 >
 > ```
 > client version 1.25 is too old.
 > Minimum supported API version is 1.44
 > ```
 >
-> Das Projekt `containrrr/watchtower` wird seit 2023 nicht mehr gepflegt. Die
-> Compose-Datei bleibt hier aufgabengemäß beim Original aus dem Gist. Für den
-> produktiven Einsatz weicht man auf einen aktiven Fork aus, etwa
-> `nickfedor/watchtower`; ein Testlauf damit funktionierte einwandfrei
-> (*Watchtower 1.22.1 using Docker API v1.52*).
+> Das Projekt wird seit 2023 nicht mehr gepflegt. `watchtower.yml` verwendet
+> deshalb den aktiv gepflegten Fork **`nickfedor/watchtower`**, der dieselben
+> Optionen versteht. Die Original-Zeile steht als Kommentar in der Datei.
 >
 > Das ist übrigens genau das Problem, das Watchtower selbst lösen soll:
 > ein Image, das zu lange nicht aktualisiert wurde.
+
+### Optionen in dieser Konfiguration
+
+| Option | Bedeutung |
+| ------ | --------- |
+| `--label-enable` | Nur Container mit dem Watchtower-Label werden angefasst |
+| `--interval 3600` | Stündliche Prüfung statt der voreingestellten 24 Stunden |
+| `--cleanup` | Ersetzte Images werden entfernt, statt sich anzusammeln |
 
 ---
 
@@ -327,7 +332,7 @@ Die vier Stacks wurden nacheinander gestartet und nach jedem Schritt mit
 ```
 NAMES        STATUS                     PORTS
 nginx        Up 28 seconds              0.0.0.0:80->80/tcp
-watchtower   Exited (1) 28 seconds ago
+watchtower   Up 27 seconds             
 portainer    Up 30 seconds              8000/tcp, 9443/tcp, 0.0.0.0:9000->9000/tcp
 pihole       Up 30 seconds (healthy)    0.0.0.0:5335->53/tcp, 0.0.0.0:5335->53/udp, 0.0.0.0:8081->80/tcp
 ```
@@ -339,7 +344,7 @@ Ergebnis der Anmeldung an den Weboberflächen:
 | nginx      | <http://localhost>               | ✅ HTTP 200, eigene Startseite             |
 | Pi-hole    | <http://localhost:8081/admin>    | ✅ Anmeldung erfolgreich                   |
 | Portainer  | <http://localhost:9000>          | ✅ Anmeldung erfolgreich                   |
-| Watchtower | —                                | ⚠️ Exit-Code 1, siehe Abschnitt oben       |
+| Watchtower | —                                | ✅ läuft, überwacht die drei gelabelten Container |
 
 Drei Dinge sind dabei aufgefallen:
 
@@ -349,8 +354,9 @@ Drei Dinge sind dabei aufgefallen:
    Standard, außen weicht man aus.
 2. **Der Docker-Socket ist mächtig.** Portainer und Watchtower brauchen ihn
    beide — und wer ihn hat, kontrolliert den ganzen Host.
-3. **Ein Image ohne Pflege veraltet.** Watchtower ist daran gescheitert, dass
-   sein eigenes Image zwei Jahre alt ist.
+3. **Ein Image ohne Pflege veraltet.** Das Watchtower-Image aus dem Video ist
+   an seinem eigenen Alter gescheitert — die Docker-API hat sich weiterentwickelt,
+   das Image nicht. Ein gepflegter Fork löst das.
 
 ## Zwei Docker-Daemons: WSL und Docker Desktop
 

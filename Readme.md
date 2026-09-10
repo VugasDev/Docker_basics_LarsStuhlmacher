@@ -394,6 +394,44 @@ WSL-Shell auf den Docker-Desktop-Daemon umgeleitet wird.
 > diesem Projekt betraf das Pi-hole: Unter WSL war Port 53 belegt, unter Windows
 > zusätzlich 5353 (mDNS). Erst 5335 war in beiden Umgebungen frei.
 
+### Stolperfalle: Docker-Socket-Mounts nach einem Neustart
+
+Bei aktiver WSL-Integration reicht Docker Desktop den Docker-Socket über einen
+Umweg in die Distribution:
+
+```
+/var/run/docker.sock   (in der WSL-Distribution)
+  └── wird gemountet von
+      /mnt/wsl/docker-desktop-bind-mounts/<Distro>/docker.sock
+```
+
+Diesen Bind-Mount legt Docker Desktop erst **einige Sekunden nach** dem Start
+des Daemons an. Container mit `restart: always` oder `unless-stopped`, die den
+Socket mounten — hier **Portainer** und **Watchtower** — starten schneller als
+der Mount bereitsteht und brechen mit **Exit-Code 127** ab:
+
+```
+error mounting ".../docker-desktop-bind-mounts/<Distro>/docker.sock"
+to rootfs at "/var/run/docker.sock": no such file or directory
+```
+
+Die Neustart-Richtlinie hilft dabei nicht: Der Fehler tritt beim *Erstellen der
+Task* auf, nicht im laufenden Prozess — für Docker ist der Start fehlgeschlagen,
+nicht der Container abgestürzt. `RestartCount` bleibt deshalb bei 0.
+
+Container ohne Socket-Mount (nginx, Pi-hole) sind nicht betroffen.
+
+**Abhilfe:** Die Container einige Sekunden später einfach erneut starten — dann
+existiert der Mount und alles läuft:
+
+```bash
+docker start portainer watchtower
+```
+
+Ein Workaround über den Mount-Pfad (`//var/run/docker.sock` statt
+`/var/run/docker.sock`) wurde geprüft und ändert nichts.
+
+
 ## Container mit Docker Desktop steuern
 
 Docker Desktop unter Windows zeigt dieselben Container grafisch an, sofern die

@@ -8,9 +8,12 @@ services:
     image: pihole/pihole:latest
     ports:
       # ANPASSUNG: Im Video "53:53". Port 53 ist unter WSL2 bereits von
-      # systemd-resolved belegt, deshalb weicht der Host-Port auf 5353 aus.
-      - "5353:53/tcp"
-      - "5353:53/udp"
+      # systemd-resolved belegt, deshalb weicht der Host-Port aus.
+      # Gewählt wurde 5335 und nicht das naheliegende 5353: Letzteres ist der
+      # mDNS-Standardport und unter Windows von svchost und Chrome belegt.
+      # 5335 ist in beiden Umgebungen frei.
+      - "5335:53/tcp"
+      - "5335:53/udp"
       # ANPASSUNG: Port 67 (DHCP) aus dem Video entfällt — Pi-hole wird hier
       # nicht als DHCP-Server betrieben.
       # ANPASSUNG: Im Video "80:80". Port 80 gehört in diesem Projekt dem

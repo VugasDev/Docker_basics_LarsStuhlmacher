@@ -37,15 +37,17 @@ Container zu beeinflussen.
 | Dienst     | Host-Port    | Weboberfläche                     |
 | ---------- | ------------ | --------------------------------- |
 | nginx      | 80           | <http://localhost>                |
-| Pi-hole    | 8081, 5353   | <http://localhost:8081/admin>     |
+| Pi-hole    | 8081, 5335   | <http://localhost:8081/admin>     |
 | Portainer  | 9000         | <http://localhost:9000>           |
 | Watchtower | —            | keine, arbeitet im Hintergrund    |
 
 Zwei Abweichungen von den Original-Dateien aus dem Video waren nötig, weil
 Ports auf dem Testsystem (Ubuntu unter WSL2) bereits belegt waren:
 
-* **Pi-hole DNS** liegt auf Host-Port `5353` statt `53`, weil `systemd-resolved`
-  Port 53 belegt.
+* **Pi-hole DNS** liegt auf Host-Port `5335` statt `53`, weil `systemd-resolved`
+  Port 53 belegt. Der naheliegende Ausweichport `5353` scheidet aus: Das ist der
+  mDNS-Standardport, unter Windows von `svchost` und Chrome belegt. `5335` ist in
+  beiden Umgebungen frei.
 * **Pi-hole Web** liegt auf Host-Port `8081` statt `80`, weil Port 80 in diesem
   Projekt vom nginx-Stack verwendet wird.
 
@@ -127,8 +129,8 @@ installieren lässt.
 
 ```yaml
 ports:
-  - "5353:53/tcp"    # DNS
-  - "5353:53/udp"
+  - "5335:53/tcp"    # DNS
+  - "5335:53/udp"
   - "8081:80/tcp"    # Weboberfläche
 cap_add:
   - NET_ADMIN        # Rechte für Netzwerkoperationen
@@ -327,7 +329,7 @@ NAMES        STATUS                     PORTS
 nginx        Up 28 seconds              0.0.0.0:80->80/tcp
 watchtower   Exited (1) 28 seconds ago
 portainer    Up 30 seconds              8000/tcp, 9443/tcp, 0.0.0.0:9000->9000/tcp
-pihole       Up 30 seconds (healthy)    0.0.0.0:5353->53/tcp, 0.0.0.0:5353->53/udp, 0.0.0.0:8081->80/tcp
+pihole       Up 30 seconds (healthy)    0.0.0.0:5335->53/tcp, 0.0.0.0:5335->53/udp, 0.0.0.0:8081->80/tcp
 ```
 
 Ergebnis der Anmeldung an den Weboberflächen:
@@ -349,6 +351,42 @@ Drei Dinge sind dabei aufgefallen:
    beide — und wer ihn hat, kontrolliert den ganzen Host.
 3. **Ein Image ohne Pflege veraltet.** Watchtower ist daran gescheitert, dass
    sein eigenes Image zwei Jahre alt ist.
+
+## Zwei Docker-Daemons: WSL und Docker Desktop
+
+Auf einem Windows-Rechner mit WSL2 können **zwei getrennte Docker-Daemons**
+nebeneinander laufen:
+
+| | Nativer Docker in WSL | Docker Desktop |
+| --- | --- | --- |
+| Installation | `apt install docker.io` in der Distribution | Windows-Installer |
+| Endpunkt | `unix:///var/run/docker.sock` | `npipe:////./pipe/dockerDesktopLinuxEngine` |
+| Aufruf | `docker` in der WSL-Shell | `docker.exe`, oder `docker` bei aktiver WSL-Integration |
+
+Beide führen **komplett getrennte Bestände** an Containern, Images, Netzwerken
+und Volumes. Ein Container, der im einen Daemon läuft, ist im anderen schlicht
+nicht vorhanden — und `docker ps` in der WSL-Shell zeigt nur den Bestand des
+Daemons, mit dem diese Shell gerade spricht.
+
+Welcher das ist, verrät:
+
+```bash
+docker context ls          # verfügbare Endpunkte, * markiert den aktiven
+docker info --format '{{.DockerRootDir}}'
+```
+
+Das erklärt einen Effekt, der beim Bearbeiten dieser Aufgabe auftrat: Container,
+die in der WSL-Shell gestartet wurden, tauchten in der Oberfläche von Docker
+Desktop nicht auf. Sie liefen im nativen Daemon, Docker Desktop zeigte seinen
+eigenen. Wer die Container in Docker Desktop sehen will, muss sie in dessen
+Daemon starten — entweder über `docker.exe compose …` oder indem man in den
+Einstellungen die **WSL-Integration** aktiviert, wodurch `docker` in der
+WSL-Shell auf den Docker-Desktop-Daemon umgeleitet wird.
+
+> **Achtung bei Ports:** Die beiden Daemons haben unterschiedliche
+> Portbelegungen, weil sie an verschiedene Netzwerk-Stacks gebunden sind. In
+> diesem Projekt betraf das Pi-hole: Unter WSL war Port 53 belegt, unter Windows
+> zusätzlich 5353 (mDNS). Erst 5335 war in beiden Umgebungen frei.
 
 ## Container mit Docker Desktop steuern
 
